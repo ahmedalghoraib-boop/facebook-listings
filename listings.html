@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عقارات للبيع - مناطق مدينة نصر</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5; 
+            padding: 20px; 
+            direction: rtl;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        h1 { color: #1a1a2e; margin-bottom: 20px; font-size: 28px; }
+        .stats { 
+            background: white; 
+            padding: 15px 20px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .stat { font-weight: 600; color: #333; }
+        .controls { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .search-box { 
+            width: 100%; 
+            padding: 12px 16px; 
+            border: 1px solid #ddd; 
+            border-radius: 6px; 
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        .filter-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: end; }
+        .filter-group { flex: 1; min-width: 200px; }
+        .filter-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; font-size: 14px; }
+        .filter-group select, .filter-group input { 
+            width: 100%; 
+            padding: 10px 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 6px; 
+            font-size: 14px;
+            background: white;
+        }
+        .btn { 
+            padding: 10px 20px; 
+            background: #1a1a2e; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .btn:hover { background: #2d2d5e; }
+        .btn-secondary { background: #6c757d; }
+        .btn-secondary:hover { background: #5a6268; }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            background: white; 
+            border-radius: 8px; 
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        th, td { 
+            padding: 12px 15px; 
+            text-align: right; 
+            border-bottom: 1px solid #eee;
+        }
+        th { 
+            background: #1a1a2e; 
+            color: white; 
+            font-weight: 600; 
+            position: sticky; 
+            top: 0; 
+            cursor: pointer;
+            user-select: none;
+        }
+        th:hover { background: #2d2d5e; }
+        th.sorted-asc::after { content: ' ▲'; }
+        th.sorted-desc::after { content: ' ▼'; }
+        tr:hover { background: #f8f9fa; }
+        tr.hidden { display: none; }
+        .price { font-weight: 700; color: #28a745; font-size: 15px; white-space: nowrap; }
+        .title { font-weight: 500; color: #333; max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .location { color: #6c757d; font-size: 13px; }
+        .area-badge { 
+            display: inline-block; 
+            padding: 3px 8px; 
+            background: #e7f3ff; 
+            color: #0066cc; 
+            border-radius: 12px; 
+            font-size: 11px; 
+            font-weight: 600;
+        }
+        .img-thumb { width: 60px; height: 45px; object-fit: cover; border-radius: 4px; cursor: pointer; }
+        .link-btn { 
+            display: inline-block; 
+            padding: 6px 12px; 
+            background: #007bff; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 4px; 
+            font-size: 12px;
+        }
+        .link-btn:hover { background: #0056b3; }
+        .no-results { text-align: center; padding: 40px; color: #6c757d; font-size: 16px; }
+        .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 20px; }
+        .page-btn { 
+            padding: 8px 12px; 
+            border: 1px solid #ddd; 
+            background: white; 
+            border-radius: 4px; 
+            cursor: pointer;
+        }
+        .page-btn.active { background: #1a1a2e; color: white; border-color: #1a1a2e; }
+        .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        @media (max-width: 900px) { table { display: block; overflow-x: auto; } .filter-group { flex-direction: column; align-items: stretch; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 عقارات للبيع - مناطق مدينة نصر</h1>
+        <div class="stats">
+            <span class="stat">إجمالي الإعلانات: <span id="totalCount">84</span></span>
+            <span class="stat">معروضة: <span id="shownCount">84</span></span>
+            <span class="stat">مناطق: <span id="areaCount">6</span></span>
+        </div>
+        <div class="controls">
+            <input type="text" class="search-box" id="searchInput" placeholder="🔍 ابحث في العنوان، السعر، الموقع، أو النص الكامل...">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>المنطقة</label>
+                    <select id="areaFilter">
+                        <option value="">جميع المناطق</option>
+                        <option value="Nasr City 1st District (المنطقة الأولى)">المنطقة الأولى</option>
+                        <option value="Nasr City 6th District (المنطقة السادسة)">المنطقة السادسة</option>
+                        <option value="Nasr City 7th District (الحي السابع)">الحي السابع</option>
+                        <option value="Nasr City 8th District (المنطقة الثامنة)">المنطقة الثامنة</option>
+                        <option value="Tawfiq City / عمارات التوفيق">عمارات التوفيق</option>
+                        <option value="Embassy District (حي السفارات)">حي السفارات</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>السعر الأدنى (ج.م)</label>
+                    <input type="number" id="minPrice" placeholder="مثال: 500000" step="10000">
+                </div>
+                <div class="filter-group">
+                    <label>السعر الأعلى (ج.م)</label>
+                    <input type="number" id="maxPrice" placeholder="مثال: 3000000" step="10000">
+                </div>
+                <div class="filter-group">
+                    <label>ترتيب حسب</label>
+                    <select id="sortBy">
+                        <option value="price-asc">السعر: الأقل أولاً</option>
+                        <option value="price-desc">السعر: الأعلى أولاً</option>
+                        <option value="area">المنطقة</option>
+                        <option value="location">الموقع</option>
+                    </select>
+                </div>
+                <button class="btn btn-secondary" id="clearFilters">مسح الفلاتر</button>
+            </div>
+        </div>
+        <div id="tableContainer">
+            <table id="listingsTable">
+                <thead>
+                    <tr>
+                        <th data-col="image">الصورة</th>
+                        <th data-col="title">العنوان</th>
+                        <th data-col="price">السعر</th>
+                        <th data-col="location">الموقع</th>
+                        <th data-col="area">منطقة البحث</th>
+                        <th data-col="link">الرابط</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+        <div id="noResults" class="no-results" style="display: none;">لا توجد نتائج مطابقة للفلاتر</div>
+        <div class="pagination" id="pagination"></div>
+    </div>
+
+    <script>
+        
+        
+        function parsePrice(priceStr) {
+            if (!priceStr) return 0;
+            const match = priceStr.replace(/[^\d,]/g, '').replace(/,/g, '');
+            return parseInt(match) || 0;
+        }
+
+        function init() {
+            document.getElementById('totalCount').textContent = 84;
+            document.getElementById('shownCount').textContent = 84;
+
+            // Areas populated from loaded data
+            const defaultAreas = [
+                'Nasr City 1st District (المنطقة الأولى)',
+                'Nasr City 6th District (المنطقة السادسة)',
+                'Nasr City 7th District (الحي السابع)',
+                'Nasr City 8th District (المنطقة الثامنة)',
+                'Tawfiq City / عمارات التوفيق',
+                'Embassy District (حي السفارات)'
+            ];
+            const areaSelect = document.getElementById('areaFilter');
+            const areaSelect = document.getElementById('areaFilter');
+            defaultAreas.forEach(area => {
+                const opt = document.createElement('option');
+                opt.value = area;
+                opt.textContent = area;
+                areaSelect.appendChild(opt);
+            });
+
+            applyFilters();
+
+            document.getElementById('searchInput').addEventListener('input', debounce(applyFilters, 300));
+            document.getElementById('areaFilter').addEventListener('change', applyFilters);
+            document.getElementById('minPrice').addEventListener('input', debounce(applyFilters, 300));
+            document.getElementById('maxPrice').addEventListener('input', debounce(applyFilters, 300));
+            document.getElementById('sortBy').addEventListener('change', applyFilters);
+            document.getElementById('clearFilters').addEventListener('click', clearFilters);
+
+            document.querySelectorAll('th[data-col]').forEach(th => {
+                th.addEventListener('click', () => {
+                    const col = th.dataset.col;
+                    if (sortColumn === col) { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; }
+                    else { sortColumn = col; sortDirection = 'asc'; }
+                    document.querySelectorAll('th').forEach(h => h.classList.remove('sorted-asc', 'sorted-desc'));
+                    th.classList.add(sortDirection === 'asc' ? 'sorted-asc' : 'sorted-desc');
+                    applyFilters();
+                });
+            });
+        }
+
+        function debounce(fn, wait) {
+            let timeout; return function(...args) { clearTimeout(timeout); timeout = setTimeout(() => fn.apply(this, args), wait); };
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('areaFilter').value = '';
+            document.getElementById('minPrice').value = '';
+            document.getElementById('maxPrice').value = '';
+            document.getElementById('sortBy').value = 'price-asc';
+            sortColumn = null; sortDirection = 'asc';
+            document.querySelectorAll('th').forEach(h => h.classList.remove('sorted-asc', 'sorted-desc'));
+            currentPage = 1; applyFilters();
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('searchInput').value.toLowerCase().trim();
+            const area = document.getElementById('areaFilter').value;
+            const minPrice = parseInt(document.getElementById('minPrice').value) || 0;
+            const maxPrice = parseInt(document.getElementById('maxPrice').value) || Infinity;
+            const sortBy = document.getElementById('sortBy').value;
+
+            filteredData = LISTINGS_DATA.filter(item => {
+                if (search) {
+                    const searchable = [item.title, item.location, item.raw_text, item.source_area].join(' ').toLowerCase();
+                    if (!searchable.includes(search)) return false;
+                }
+                if (area && item.source_area !== area) return false;
+                const price = parsePrice(item.price);
+                if (price < minPrice || price > maxPrice) return false;
+                return true;
+            });
+
+            if (sortColumn) {
+                filteredData.sort((a, b) => { let va, vb; switch(sortColumn) { case 'price': va = parsePrice(a.price); vb = parsePrice(b.price); break; case 'title': va = a.title; vb = b.title; break; case 'location': va = a.location; vb = b.location; break; case 'area': va = a.source_area; vb = b.source_area; break; default: return 0; }; return sortDirection === 'asc' ? (va < vb ? -1 : 1) : (va > vb ? 1 : -1); });
+            } else if (sortBy) {
+                filteredData.sort((a, b) => { switch(sortBy) { case 'price-asc': return parsePrice(a.price) - parsePrice(b.price); case 'price-desc': return parsePrice(b.price) - parsePrice(a.price); case 'area': return a.source_area.localeCompare(b.source_area); case 'location': return a.location.localeCompare(b.location); default: return 0; }; });
+            }
+
+            currentPage = 1; renderTable(); renderPagination(); updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('shownCount').textContent = filteredData.length;
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            const noResults = document.getElementById('noResults');
+            if (filteredData.length === 0) { tbody.innerHTML = ''; noResults.style.display = 'block'; return; }
+            noResults.style.display = 'none';
+            const start = (currentPage - 1) * ITEMS_PER_PAGE;
+            const end = start + ITEMS_PER_PAGE;
+            const pageData = filteredData.slice(start, end);
+            tbody.innerHTML = pageData.map(item => ``
+                <tr>
+                    <td>{item.image_url ? `<img src="{item.image_url}" class="img-thumb" alt="صورة">` : '-'}</td>
+                    <td class="title" title="{item.raw_text.replace(/"/g, '"')}">{item.title}</td>
+                    <td class="price">{item.price}</td>
+                    <td class="location">{item.location}</td>
+                    <td><span class="area-badge">{item.source_area}</span></td>
+                    <td><a href="{item.url}" target="_blank" class="link-btn">فتح في فيسبوك</a></td>
+                </tr>`
+            ).join(''));
+            renderPagination();
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+            const pagination = document.getElementById('pagination');
+            if (totalPages <= 1) { pagination.innerHTML = ''; return; }
+            let html = '';
+            if (currentPage > 1) { html += `<button class="page-btn" onclick="goToPage({currentPage - 1})">‹ السابق</button>`; }
+            let startPage = Math.max(1, currentPage - Math.floor(5 / 2));
+            let endPage = Math.min(totalPages, startPage + 5 - 1);
+            if (endPage - startPage + 1 < 5) { startPage = Math.max(1, endPage - 5 + 1); }
+            for (let i = startPage; i <= endPage; i++) { html += `<button class="page-btn {i === currentPage ? 'active' : ''}" onclick="goToPage({i})">{i}</button>`; }
+            if (currentPage < totalPages) { html += `<button class="page-btn" onclick="goToPage({currentPage + 1})">التالي ›</button>`; }
+            pagination.innerHTML = html;
+        }
+
+        function goToPage(page) { currentPage = page; renderTable(); renderPagination(); window.scrollTo({top: 0, behavior: 'smooth'}); }
+
+        const ITEMS_PER_PAGE = 25;
+        let currentPage = 1, filteredData = [], sortColumn = null, sortDirection = 'asc';
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+
+    <script src="listings_data.js"></script>
+</body>>
+</html>
